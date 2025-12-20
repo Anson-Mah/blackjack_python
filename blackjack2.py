@@ -9,8 +9,8 @@ def main():
 		print('[1]. Play Blackjack')
 		print("[2]. View Settings")
 		print("[3]. Change Settings")
-		print('[4]. Explain Settings')
-		print('[5]. How to Play Blackjack')
+		# print('[4]. Explain Settings')
+		# print('[5]. How to Play Blackjack')
 
 		# Input Correction
 		# If the user's input would break the program, it changes the input such that it will not break the program.
@@ -38,9 +38,30 @@ def main():
 			case 5:
 				how_to_play()
 
+
 def play():
-	global amount_of_decks, surrender, hit_on_soft17
+	global deck, money, amount_of_decks, insurance, surrender, hit_on_soft17
 	make_deck(amount_of_decks)
+
+	# Input Validation for the Bet
+	while True:
+		try:
+			user_bet = float(input("Your Bet: $"))
+		except ValueError:
+			print("Please input a valid bet.")
+			continue
+		if user_bet > money:
+			print(f"You cannot bet more than you have. You currently have ${money}.")
+		elif user_bet < 0:
+			print("You cannot have a negative bet. Please input a value greater than 0.")
+		elif user_bet == 0:
+			print("You cannot bet $0. Please input a value greater than 0.")
+		else:
+			bet = user_bet
+			clear_terminal()
+			print(f"Your bet has been set to ${bet}.")
+			break
+
 
 # Creates decks for the game
 def make_deck(amount_of_decks):
@@ -52,25 +73,29 @@ def make_deck(amount_of_decks):
 				deck.append(ranks[j])
 	random.shuffle(deck)
 
+
 def view_settings():
-	global amount_of_decks, surrender, hit_on_soft17
+	global amount_of_decks, insurance, surrender, hit_on_soft17
 	print("Current Settings")
 	print("-----------------")
 	print(f"Amount of Decks: {amount_of_decks}")
-	print(f"Surrender: {'Yes' if surrender == True else 'No'}")
-	print(f"Hit on Soft 17: {'Yes' if hit_on_soft17 == True else 'No'}")
+	print(f"Insurance: {'Enabled' if insurance == True else 'Disabled'}")
+	print(f"Surrender: {'Enabled' if surrender == True else 'Disabled'}")
+	print(f"Hit on Soft 17: {'Enabled' if hit_on_soft17 == True else 'Disabled'}")
+
 
 def change_settings():
-	global amount_of_decks, surrender, hit_on_soft17
+	global amount_of_decks, insurance, surrender, hit_on_soft17
 
 	# Settings Menu
 	print("Which setting would you like to change?")
 	print("-----------------------------------------")
 	print("[0]. Exit Settings")
 	print("[1]. Amount of Decks")
-	print("[2]. Surrender")
-	print("[3]. Hit on Soft 17")
-	print("[4]. Restore Default Settings")
+	print("[2]. Insurance")
+	print("[3]. Surrender")
+	print("[4]. Hit on Soft 17")
+	print("[5]. Restore Default Settings")
 
 	# Input Correction
 	# If the user's input would break the program, it changes the input such that it will not break the program.
@@ -100,6 +125,14 @@ def change_settings():
 					print(f"Amount of Decks set to {amount_of_decks}\n")
 					break
 		case 2:
+			# Insurance
+			if insurance == True:
+				insurance = False
+			else:
+				insurance = True
+			clear_terminal()
+			print(f"Insurance set to {insurance}\n")
+		case 3:
 			# Surrender
 			if surrender == True:
 				surrender = False
@@ -107,7 +140,7 @@ def change_settings():
 				surrender = True
 			clear_terminal()
 			print(f"Surrender set to {surrender}\n")
-		case 3:
+		case 4:
 			# Hit on 17
 			if hit_on_soft17 == True:
 				hit_on_soft17 = False
@@ -115,15 +148,17 @@ def change_settings():
 				hit_on_soft17 = True
 			clear_terminal()
 			print(f"Hit on 17 set to {hit_on_soft17}")
-		case 4:
+		case 5:
 			# Restore Default Settings
 			amount_of_decks = 2
-			surrender = False
+			insurance = True
+			surrender = True
 			hit_on_soft17 = False
 			clear_terminal()
 			print("Default Settings have been restored.\n")
 
 	change_settings()
+
 
 def explain_settings():
 	print("AMOUNT OF DECKS:")
@@ -131,14 +166,26 @@ def explain_settings():
 
 	print("")
 
+	print("INSURANCE:")
+	print("Before a player begins playing their hand, they may buy insurance.")
+	print("Insurance is equal to the bet initially made, and is given back to the player if the dealer does in fact have a blackjack.")
+	print("If the dealer is dealt a Blackjack, they receive back their original bet.")
+
+	print("")
+
 	print("SURRENDER:")
-	print("something")
+	print("Before a player begins playing their hand, they may choose to Surrender their hand.")
+	print("Surrendering makes you automatically give your hand back to the dealer.")
+	print("You receive back half of your original bet, while the other half goes to the dealer.")
 
 	print("")
 
 	print("HIT ON SOFT 17:")
-	print("By default, the dealer will automatically stand on a Soft 17.")
+	print("By default, the dealer will automatically stand on all hands worth 17.")
 	print("Enabling this setting will change that behavior, making the dealer hit on a Soft 17.")
+	print("A Soft Hand is a hand that contains an 11-valued Ace. It is called a Soft hand because you cannot bust if you take another card.")
+	print("Note that even with this setting enabled, the dealer will still stand on a Hard 17 (A hand worth 17 but does not have an 11-valued Ace.)")
+
 
 def how_to_play():
 	print("How to Play: Blackjack")
@@ -215,15 +262,21 @@ def how_to_play():
 	print('The great majority of script has been directly ripped from the Youtube video "How to play Blackjack" created by Triple S. Games')
 	print("Minor changes have been made, adjusting the script to fit readers rather than listeners.")
 
+
 def clear_terminal(): os.system('cls' if os.name == 'nt' else 'clear')
+
 
 # Creates empty deck. Will be used later for game purposes.
 deck = []		
 
-# Settings
+# Game Settings
 amount_of_decks = 2
-surrender = False
+surrender = True
 hit_on_soft17 = False
+insurance = True
+
+# Money
+money = 100
 
 if __name__ == "__main__":
 	main()

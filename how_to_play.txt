@@ -2,7 +2,7 @@ How to Play: Blackjack
 
 
 
-The objective of the game is to bet against the dealer for hands as close to 21 as possible without going over.
+The objective of the game is to bet against the dealer for hands as close to 21 as possible without going over 21.
 
 
 
