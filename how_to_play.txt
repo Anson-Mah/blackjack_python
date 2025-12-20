@@ -1,73 +1,60 @@
 How to Play: Blackjack
 
+OBJECTIVE:
+Win money by creating hands that are higher than the dealer's hand but do not exceed 21.
 
 
-The objective of the game is to bet against the dealer for hands as close to 21 as possible without going over 21.
+CARD VALUES:
+Cards from 2-10 are worth their face value.
+Face cards are worth 10.
+Aces are worth 11 or 1, depending on which is more advantageous to the hand.
 
 
-
-Cards from 2-10 are worth their face value. 
-Face cards are worth 10. 
-Aces are worth 11 or 1, depending on which is more advantageous to the hand. 
-Players make their bets on the round, then the dealer passes out one card face up to everyone including themselves. 
-Next, the dealer passes out one more card face up to all of the players and one card face down for their own hand. 
-If you are dealt 21, this is called a BLACKJACK, if the dealer does not also have a BLACKJACK, then you immediately win an amount equal to 1.5 times your initial bet and the round ends.
+ROUND START:
+You and the dealer are initially dealt two cards each.
+The dealer passes out one card face up to you and themself. 
+Next, the dealer passes out one more card face up to you, but one card face down for their own hand. 
 
 
-
-You (The Player) will always first play your hand before the dealer reveals their face down card. 
-Before a player begins playing their hand; they may opt to do one, both, or none of the following: BUY INSURANCE, or SURRENDER. 
-A player may BUY INSURANCE in case the dealer has a blackjack. 
-Insurance is equal to the bet initially made, and is given back to the player if the dealer does in fact have a blackjack. 
-Additionally, a player may SURRENDER their hand if they are confident that they will lose. 
-Surrendering gives the player back half of their bet, while the other half is given to the dealer. 
-After this, the dealer checks their hand to if they have a BLACKJACK. 
-If they do, they reveal their BLACKJACK immediately and the round ends.
+BLACKJACK:
+If your initial two cards make a value of 21, this is called a BLACKJACK.
+If the dealer does not also have a BLACKJACK, then you immediately win an amount equal to 1.5 times your initial bet and the hand immediately ends.
 
 
+PLAYER DECISIONS:
 
-You can choose to HIT, meaning to request an additional card from the deck. 
-If your hand becomes over 21 after hitting, this is called a BUST and you automatically lose your bet. 
-You may HIT as many times as you like, as long as you do not BUST. 
+You will always take your turn first before the dealer takes their turn.
+
+ Hit: 
+ Take an additional card from the deck and add it to your hand.
+ If your hand becomes over 21 after hitting, this is called a BUST and you automatically lose your bet.
+ You may hit as many times as you like, as long as you do not bust.
+
+ Stand: 
+ End your turn and keep all cards dealt to you.
+
+ Double Down:
+ Double your initial bet and add exactly one more card to your hand.
+
+ Split:
+ You can decide to split your cards only if the 2 cards originally dealt to you are the same value.
+ Splitting turns the pair into two individual hands, each with their own bet equal to the player's initial bet.
+ The dealer then deals you two additional cards to complete each hand.
+
+ Surrender:
+ Forfeit half your bet and end the hand immediately.
 
 
-
-You can also choose to STAND, ending your turn and keeping the cards dealt to you. 
-You can stand before or after hitting.
-
-
-
-You can decide to SPLIT your cards only if the 2 cards originally dealt to you are a pair. 
-Splitting turns the pair into two individual hands, each with their own bet equal to the player’s first bet. 
-The dealer then deals you two additional cards to complete each hand and the game continues, with you playing both hands normally. 
-
-
-
-You can decide to DOUBLE DOWN and double your initial bet. 
-If you decide to DOUBLE DOWN, the dealer will give you one more card after which you must stand.
-
-
-
+DEALER'S TURN:
 Once you have finished playing your hand, the dealer's turn begins.
 The dealer begins their turn by revealing their facedown card.
 Unlike the player, the dealer has specific rules regarding their play which must be followed at all times.
 If the dealer has anything under 17, then the must HIT.
 If the dealer has 17 or over, then they must STAND.
-Once the dealer finishes playing their hand, you compare your hand against the dealer's
-
-
+The dealer cannot DOUBLE DOWN nor SPLIT.
+Once the dealer finishes playing their hand, you compare your hand against the dealer's.
 
 If the dealer's hand is closer to 21 than yours, you lose your entire bet. 
 If your hand is closer to 21 than the dealer's, you win an amount equal to your bet. 
 If the dealer busts, you win an amount equal to your bet. 
 If you and your dealer have the same value, then you PUSH (Tie), and no exchange of bets is made.
-
-
-
-After each round, all the cards in play are discarded but not shuffled back into the deck. 
-Only once all the cards in the deck have been used is it shuffled.
-
-
-
-The great majority of script has been directly ripped from the Youtube video "How to play Blackjack" created by Triple S. Games
-Minor changes have been made, adjusting the script to fit readers rather than listeners.
