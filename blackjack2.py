@@ -1,5 +1,6 @@
-import random
 import os
+import random
+import time
 
 def main():
 	while True:
@@ -9,13 +10,14 @@ def main():
 		print('[1]. Play Blackjack')
 		print("[2]. View Settings")
 		print("[3]. Change Settings")
-		# print('[4]. Explain Settings')
-		# print('[5]. How to Play Blackjack')
+		print('[4]. Explain Settings')
+		print('[5]. How to Play Blackjack')
 
 		# Input Correction
 		# If the user's input would break the program, it changes the input such that it will not break the program.
 		try:
-			selection = int(input("Select an Option: "))
+			# selection = int(input("Select an Option: "))
+			selection = 1
 		except ValueError:
 				# On ValueError, the input variable is instead set to an integer not corresponding to anything on the menu, which will bring you back to the initial menu
 			selection = 9
@@ -40,45 +42,222 @@ def main():
 
 
 def play():
-	global deck, money, amount_of_decks, hit_on_soft17
+	global deck, money, card_values, amount_of_decks, hit_on_soft17
+
 	make_deck(amount_of_decks)
 
-	# Creates More In-Game Variables
-	player_cards = []
-	dealer_cards = []
+	bet = bet_money(True)
 
-	# Input Validation for the Bet
 	while True:
-		try:
-			user_bet = float(input("Your Bet: $"))
-		except ValueError:
-			print("Please input a valid bet.")
-			continue
-		if user_bet > money:
-			print(f"You cannot bet more than you have. You currently have ${money}.")
-		elif user_bet < 0:
-			print("You cannot have a negative bet. Please input a value greater than 0.")
-		elif user_bet == 0:
-			print("You cannot bet $0. Please input a value greater than 0.")
-		else:
-			bet = user_bet
+		if len(deck) < 26:
+			print("Deck getting low, shuffling a new deck.")
+			make_deck(amount_of_decks)
+
+		# Creates/Resets In-Game Variables
+		player_cards = []
+		dealer_cards = []
+		player_busted = False
+		dealer_busted = False
+		player_has_surrendered = False
+
+		# Deal Out Cards
+		for i in range(4):
+			if i % 2 == 0:
+				player_cards.append(deck.pop(0))
+			else:
+				dealer_cards.append(deck.pop(0))
+
+			time.sleep(0.5)
 			clear_terminal()
-			print(f"Your bet has been set to ${bet}.\n")
+
+			print("-------------------------")
+			print(f"Bet: ${bet}\n")
+
+			match i:
+				case 0:
+					time.sleep(0.5)
+					print(f"Dealer Cards: ")	
+					print(f"Player Cards: {", ".join(player_cards)} ({return_hand_total(player_cards)[0]})")  # The ", ".join(cards) syntax is used to remove brackets and quotation marks when printing the list
+				case 1 | 2:
+					print(f"Dealer Cards: {dealer_cards[0]}")	
+					print(f"Player Cards: {", ".join(player_cards)} ({return_hand_total(player_cards)[0]})")  # The ", ".join(cards) syntax is used to remove brackets and quotation marks when printing the list
+				case 3:
+					print(f"Dealer Cards: {dealer_cards[0]}, ?")	
+					print(f"Player Cards: {", ".join(player_cards)} ({return_hand_total(player_cards)[0]})")  # The ", ".join(cards) syntax is used to remove brackets and quotation marks when printing the list
+					time.sleep(0.5)
+					clear_terminal()
+
+		# Player's Turn
+		while True:
+			# Player Decisions
+			print("-------------------------")
+			print(f"Bet: ${bet}\n")
+			print(f"Dealer Cards: {dealer_cards[0]}, ?")	
+			print(f"Player Cards: {", ".join(player_cards)} ({return_hand_total(player_cards)[0]})")  # The ", ".join(cards) syntax is used to remove brackets and quotation marks when printing the list
+			print()
+			print("What would you like to do?")
+			print("-------------------------")
+			print("[1]. Hit")
+			print("[2]. Stand")
+			print("[3]. Double Down")
+			print("[4]. Split")
+			print("[5]. Surrender")
+
+			# Input Correction
+			# If the user's input would break the program, it changes the input such that it will not break the program.
+			while True:
+				try:
+					selection = int(input("Select an Option: "))
+					break
+				except ValueError:
+					# On ValueError, the input variable is instead set to an integer not corresponding to anything on the menu, which will bring you back to the initial menu
+					selection = 9
+					break
+
+			# Runs different functions based off of what you inputted
+			match selection:
+				case 1:
+					clear_terminal()
+
+					# Hit
+					player_cards.append(deck.pop(0))
+
+					if return_hand_total(player_cards)[0] > 21:
+						print("-------------------------")
+						print(f"Bet: ${bet}\n")
+						print(f"Dealer Cards: {dealer_cards[0]}, ?")	
+						print(f"Player Cards: {", ".join(player_cards)} ({return_hand_total(player_cards)[0]})")  # The ", ".join(cards) syntax is used to remove brackets and quotation marks when printing the list
+
+						time.sleep(0.5)
+						player_busted = True
+						print("\nYou have busted. The dealer wins.\n")
+						money -= bet
+						print(f"Your Loss: ${bet}")
+						print(f"New Balance: ${money}")
+						break
+				case 2:
+					# Stand
+					time.sleep(0.5)
+					clear_terminal()
+					break
+				case 3:
+					clear_terminal()
+
+					# Double Down
+					if len(player_cards) > 2:
+						print("You can only Double Down on your first choice of the hand.")
+					elif (bet*2) > money:
+						print("You do not have enough money to Double Down.")
+						print(f"Current Balance (Not Including your Bet): ${money-bet}")
+					else:
+						bet = bet * 2
+
+						# Gives 1 Additional Card
+						player_cards.append(deck.pop(0))
+
+						print(f"Bet: ${bet}\n")
+						print(f"Dealer Cards: {dealer_cards[0]}, ?")	
+						print(f"Player Cards: {", ".join(player_cards)} ({return_hand_total(player_cards)[0]})")  # The ", ".join(cards) syntax is used to remove brackets and quotation marks when printing the list
+
+						if return_hand_total(player_cards)[0] > 21:
+							time.sleep(0.5)
+							player_busted = True
+							print("\nYou have busted. The dealer wins.\n")
+							money -= bet
+							print(f"Your Loss: ${bet}")
+							print(f"New Balance: ${money}")
+							
+						# End Player's Turn
+						time.sleep(0.5)
+						break
+				case 4:
+					clear_terminal()
+
+					# Split
+					if len(player_cards) > 2:
+						print("You can only Split with two cards.")
+					elif not (card_values.get(player_cards[0]) == card_values.get(player_cards[1])):
+						print("You can only Split when you have two cards of the same value.")
+					elif (bet*2) > money:
+						print("You do not have enough money to Split.")
+						print(f"Current Balance (Not Including your Bet): ${money-bet}")
+					else:
+						play_split(bet, dealer_cards)
+				case 5:
+					clear_terminal()
+					print("You have surrendered your Hand.\n")
+					print(f"Your Loss: ${bet/2}")
+					money -= (bet/2)
+					print(f"New Balance: ${money}")
+					player_has_surrendered = True
+					break
+
+		# Dealer's Turn
+		if player_has_surrendered == False and player_busted == False:
+			while True:
+				clear_terminal()
+
+				print("-------------------------")
+				print(f"Bet: ${bet}\n")
+				print(f"Dealer Cards: {", ".join(dealer_cards)} ({return_hand_total(dealer_cards)[0]})")  # The ", ".join(cards) syntax is used to remove brackets and quotation marks when printing the list
+				print(f"Player Cards: {", ".join(player_cards)} ({return_hand_total(player_cards)[0]})")  # The ", ".join(cards) syntax is used to remove brackets and quotation marks when printing the list
+
+				dealer_total = return_hand_total(dealer_cards)[0]
+
+				if dealer_total < 17:
+					# Hit if Under 17
+					dealer_cards.append(deck.pop(0))
+					time.sleep(0.5)
+				elif dealer_total > 21:
+					dealer_busted = True
+					print("\nThe dealer has busted. You win!\n")
+					money += bet
+					print(f"Your Reward: ${bet}")
+					print(f"New Balance: ${money}")
+					break
+				elif dealer_total == 17:
+					# If 'Hit on Soft 17' is Enabled and the hand is a Soft 17, then Hit
+					if hit_on_soft17 == True and return_hand_total(dealer_cards) == True:
+						# Hit on Soft 17
+						dealer_cards.append(deck.pop(0))
+						time.sleep(0.5)
+					else:
+						# Stand on Hard 17 or if 'Hit on Soft 17' is Disabled
+						break
+				else:
+					# Stand if 17 or Over
+					break
+
+		# Compare Hands if Nobody Busted
+		if player_has_surrendered == False and player_busted == False and dealer_busted == False:
+			time.sleep(0.5)
+			print()
+
+			player_total = return_hand_total(player_cards)[0]
+			dealer_total = return_hand_total(dealer_cards)[0]
+
+			if player_total > dealer_total:
+				print("You Win!\n")
+				money += bet
+				print(f"Your Reward: ${bet}")
+				print(f"New Balance: ${money}")
+			elif dealer_total > player_total:
+				print("Dealer Wins\n")
+				money -= bet
+				print(f"Your Loss: ${bet}")
+				print(f"New Balance: ${money}")
+			else:
+				print("Result: Push")
+				print("Your balance remains unchanged.")
+				print(f"Your Balance: ${money}")
+
+		if money > 0:
+			bet = bet_money(False)
+		else:
 			break
 
-	# Deal Out Cards
-	for i in range(4):
-		random_card = random.choice(deck)
-		deck.remove(random_card)
-		if i % 2 == 0:
-			player_cards.append(random_card)
-		else:
-			dealer_cards.append(random_card)
-		# print(i, i%2, random_card)
-
-	# Display Cards in Play
-	print(f"Dealer Cards: {dealer_cards[0]}, ?")	
-	print(f"Player Cards: {", ".join(player_cards)}")  # The ", ".join(cards) syntax is used to remove brackets and quotation marks when printing the list
+	print("\nYou have no money left. You have been kicked out of the casino.")
+	money = 1000
 
 
 # Creates decks for the game
@@ -92,12 +271,65 @@ def make_deck(amount_of_decks):
 	random.shuffle(deck)
 
 
-def view_settings():
-	global amount_of_decks, hit_on_soft17
-	print("Current Settings")
-	print("-----------------")
-	print(f"Amount of Decks: {amount_of_decks}")
-	print(f"Hit on Soft 17: {'Enabled' if hit_on_soft17 == True else 'Disabled'}")
+def bet_money(first_round):
+	# Input Validation for the Bet
+	while True:
+		try:
+			if first_round == False:
+				user_bet = float(input("\nYour New Bet: $"))
+			else:
+				print("-------------------------")
+				print(f"Your Current Balance: ${money}")
+				# user_bet = float(input("Your Bet: $"))
+				user_bet = 100
+		except ValueError:
+			print("Please input a valid bet.")
+			continue
+		if user_bet > money:
+			print(f"You cannot bet more than you have. You currently have ${money}.")
+		elif user_bet < 0:
+			print("You cannot have a negative bet. Please input a value greater than 0.")
+		elif user_bet == 0:
+			print("You cannot bet $0. Please input a value greater than 0.")
+		else:
+			bet = user_bet
+			clear_terminal()
+			break
+
+	return bet
+
+
+def return_hand_total(hand):
+	global card_values
+	is_soft_hand = False
+
+	# Counts total hand value, with Aces automatically being 11
+	total = 0
+	for i in range(len(hand)):
+		total += card_values.get(hand[i])
+
+	if total > 21:
+		# Checks for Soft Hands
+		if 'A' in hand:
+			is_soft_hand = True
+
+			# Will change any necesary Aces from 11-valued to 1-valued
+			while hand.count('A') > 0:
+				ace_position = hand.index('A')
+				hand[ace_position] = 'B'
+				new_total = 0
+				for i in range(len(hand)):
+					new_total += card_values.get(hand[i])
+				if new_total < 21:
+					total = new_total
+					if hand.count('A') == 0:
+						is_soft_hand = False
+					for i in range(hand.count('B')):
+						b_position = hand.index('B')
+						hand[b_position] = 'A'
+					break
+
+	return total, is_soft_hand
 
 
 def change_settings():
@@ -182,8 +414,8 @@ def how_to_play():
 	
 	print("CARD VALUES:")
 	print("Cards from 2-10 are worth their face value.")
-	print("Face cards are worth 10.")
-	print("Aces are worth 11 or 1, depending on which is more advantageous to the hand.")
+	print("Face cards (J, Q, K) are worth 10.")
+	print("Aces (A) are worth 11 or 1, depending on which is more advantageous to the hand.")
 	
 	print("")
 	print("")
@@ -267,6 +499,24 @@ hit_on_soft17 = False
 
 # Money
 money = 1000
+
+# Card Values
+card_values = {
+	'2': 2,
+	'3': 3,
+	'4': 4,
+	'5': 5,
+	'6': 6,
+	'7': 7,
+	'8': 8,
+	'9': 9,
+	'10': 10,
+	'J': 10,
+	'Q': 10,
+	'K': 10,
+	'A': 11,
+	'B': 1,
+}
 
 if __name__ == "__main__":
 	main()
