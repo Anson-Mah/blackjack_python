@@ -77,25 +77,30 @@ class Hand:
 def play():
 	global deck, money, total_money_bet, card_values, amount_of_decks, hit_on_soft17
 
-	# make_deck(amount_of_decks)
+	make_deck(amount_of_decks)
+	
+	# 1. Lots and Lots of Splitting
 	# deck = ['8', 'J', '8', '6', '2', 'A', '8', '8', '2', 'J', '5', 'A', '5', 'Q', '3']
-	deck = ['A', 'J', 'A', '6', 'J', 'J', '5']
+	
+	# 2. Blackjack after Splitting
+	# deck = ['A', 'J', 'A', '6', 'J', 'J', '5']
+	
+	# 3. Initial Blackjack
 	# deck = ['10', 'Q', 'A', '2']
 
 	bet = bet_money(True)
 
 	while True:
-		# if len(deck) < 26:
-		# 	print("Deck getting low, shuffling a new deck.")
-		# 	deck = []
-		# 	make_deck(amount_of_decks)
+		if len(deck) < 26:
+			print("Deck getting low, shuffling a new deck.")
+			deck = []
+			make_deck(amount_of_decks)
 
 		# Resets Player and Dealer hands
 		dealer = Hand([], 0)
 		player = [Hand([], bet)]
 
 		# Resets Other Variables
-		has_split = False
 		total_money_bet = bet
 
 		# Deal Out Cards
@@ -142,12 +147,9 @@ def play():
 			clear_terminal()
 			play_hand(dealer, player, j)
 			j += 1
-		
-		if j > 1:
-			has_split = True
 
 		# Dealer's Turn
-		if not ():
+		if 1==1:
 			while True:
 				clear_terminal()
 
@@ -198,8 +200,16 @@ def play():
 					# Stand if 17 or Over
 					break
 
+		# Check to see if there's a player hand that has not lost yet
+		all_is_lost = True
+		for i in range(len(player)):
+			if player[i].busted == False and player[i].surrendered == False:
+				all_is_lost = False
+			else:
+				continue
+
 		# Compare Hands if Nobody Busted
-		if (dealer.busted == False) or (has_split == False and player[0].surrendered == False and player[0].busted == False):
+		if dealer.busted == False and all_is_lost == False:
 			win_count = 0
 			lose_count = 0
 			push_count = 0
@@ -228,7 +238,7 @@ def play():
 				else:
 					push_count += 1
 
-		if (player[0].blackjack == False and has_split == True and dealer.busted == False):
+		if dealer.busted == False and len(player) > 1:
 			# Results
 			print(f"\nHands Won: {win_count}")
 			print(f"Hands Lost: {lose_count}")
@@ -239,7 +249,7 @@ def play():
 			print(f"\nPayout: ${payout}")
 			print(f"New Balance: ${money}")
 		
-		if (player[0].blackjack == False and dealer.busted == False and has_split == False and player[0].surrendered == False and player[0].busted == False):
+		if dealer.busted == False and (len(player) == 1 and all_is_lost == False):
 			print()
 			if player_total > dealer_total:
 				print("Result: Win\n")
@@ -315,9 +325,6 @@ def play_hand(dealer, player, j):
 		except ValueError:
 			# On ValueError, the input variable is instead set to an integer not corresponding to anything on the menu, which will bring you back to the initial menu
 			selection = 9
-
-		if selection == 2:
-			time.sleep(0.25)
 
 		clear_terminal()
 
@@ -442,8 +449,8 @@ def bet_money(first_round):
 			else:
 				print("-------------------------")
 				print(f"Your Current Balance: ${money}")
-				# user_bet = float(input("Your Bet: $"))
-				user_bet = 100
+				user_bet = float(input("Your Bet: $"))
+				# user_bet = 100
 		except ValueError:
 			print("Please input a valid bet.")
 			continue
@@ -482,7 +489,7 @@ def return_hand_total(hand):
 				new_total = 0
 				for i in range(len(hand)):
 					new_total += card_values.get(hand[i])
-				if new_total < 21:
+				if new_total <= 21:
 					total = new_total
 					if hand.count('A') == 0:
 						is_soft_hand = False
