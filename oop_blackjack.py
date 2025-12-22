@@ -49,12 +49,17 @@ class Hand:
 		self.cards = cards
 		self.busted = False
 		self.surrendered = False
+		self.blackjack = False
 
 	def bust(self):
 		self.busted = True
 
 	def surrender(self):
 		self.surrendered = True
+
+	def check_blackjack(self):
+		if (return_hand_total(self.cards)[0] == 21) and (len(self.cards) == 2):
+			self.blackjack = True
 
 	def hit(self):
 		self.cards.append(deck.pop(0))
@@ -64,7 +69,7 @@ class Hand:
 		self.cards.append(deck.pop(0))
 
 	def split(self):
-		pass
+		return Hand([self.cards.pop()], self.bet)
 
 	def __str__(self):
 		return f"{", ".join(self.cards)} ({return_hand_total(self.cards)[0]})"
@@ -74,6 +79,8 @@ def play():
 	global deck, money, card_values, amount_of_decks, hit_on_soft17
 
 	make_deck(amount_of_decks)
+	# deck = ['8', 'J', '8', '6', '2', 'A', '8', '8', '2', 'J', '5', 'A', '5', 'Q', '3']
+	# deck = ['10', 'Q', 'A', '2']
 
 	bet = bet_money(True)
 
@@ -82,6 +89,9 @@ def play():
 			print("Deck getting low, shuffling a new deck.")
 			deck = []
 			make_deck(amount_of_decks)
+
+		# Resets has_split Variable
+		has_split = False
 
 		# Resets Player and Dealer hands
 		dealer = Hand([], 0)
@@ -112,26 +122,48 @@ def play():
 					print(f"Dealer Cards: {dealer.cards[0]}, ?")
 					print(f"Player Cards: {player[0]}")
 					time.sleep(0.5)
-					clear_terminal()
+					# clear_terminal()
+
+		# Checks for an Initial Blackjack
+		player[0].check_blackjack()
+		if player[0].blackjack == True:
+			print("\nBlackjack!")
+			print(f"Payout: ${bet * 1.5}")
+			money += (bet * 1.5)
+			print(f"New Balance: ${money}")
 
 		# Player's Turn
-		j = 0
-		while j < len(player):
-			play_hand(dealer, player, j)
-			j += 1
+		if player[0].blackjack == False:
+			j = 0
+			while j < len(player):
+				clear_terminal()
+				play_hand(dealer, player, j)
+				j += 1
+		
+		if j > 1:
+			has_split = True
 
 		# Dealer's Turn
-		if player[0].surrendered == False and player[0].busted == False:
+		if player[0].blackjack == False or (has_split == False and player[0].surrendered == False and player[0].busted == False):
 			while True:
 				clear_terminal()
 
 				print("-------------------------")
-				print(f"Bet: ${player[0].bet}\n")
+				print(f"Current Bet: ${player[0].bet}\n")
 				print(f"Dealer Cards: {dealer}")
-				print(f"Player Cards: {player[0]}")
+
+				# Prints Player's Cards
+				for k in range(len(player)):
+					if player[k].busted == True:
+						print(f"Player Cards: {player[k]} (BUS)")
+					elif player[k].surrendered == True:
+						print(f"Player Cards: {player[k]} (SUR)")
+					elif player[k].blackjack == True:
+						print(f"Player Cards: {player[k]} (BLJ)")
+					else:
+						print(f"Player Cards: {player[k]}")
 
 				dealer_total = return_hand_total(dealer.cards)[0]
-				player_total = return_hand_total(player[0].cards)[0]
 
 				if dealer_total < 17:
 					# Hit if Under 17
@@ -140,7 +172,12 @@ def play():
 				elif dealer_total > 21:
 					dealer.busted = True
 					print("\nThe dealer has busted. You win!\n")
-					money += player[0].bet
+
+					payout = 0
+					for i in range(len(player)):
+						payout += player[i].bet
+					money += payout
+
 					print(f"Your Reward: ${player[0].bet}")
 					print(f"New Balance: ${money}")
 					break
@@ -158,22 +195,49 @@ def play():
 					break
 
 		# Compare Hands if Nobody Busted
-		if player[0].surrendered == False and player[0].busted == False and dealer.busted == False:
-			time.sleep(0.5)
+		if dealer.busted == False or (has_split == False and player[0].surrendered == False and player[0].busted == False):
+			win_count = 0
+			lose_count = 0
+			push_count = 0
+			payout = 0
+			for i in range(len(player)):
+				if player[i].surrendered == False and player[i].busted == False:
+					time.sleep(0.5)
+
+					dealer_total = return_hand_total(dealer.cards)[0]
+					player_total = return_hand_total(player[i].cards)[0]
+
+					if player_total > dealer_total:
+						win_count += 1
+						payout += player[i].bet
+					elif dealer_total > player_total:
+						lose_count += 1
+						payout -= player[i].bet
+					else:
+						push_count += 1
+
+		if player[0].blackjack == False and has_split == True and dealer.busted == False:
+			# Results
+			print(f"\nHands Won: {win_count}")
+			print(f"Hands Lost: {lose_count}")
+			print(f"Hands Pushes: {push_count}")
+
+			# Payout
+			money += payout
+			print(f"\nPayout: ${payout}")
+			print(f"New Balance: ${money}")
+		
+		if (player[0].blackjack == False and dealer.busted == False and has_split == False and player[0].surrendered == False and player[0].busted == False):
 			print()
-
-			dealer_total = return_hand_total(dealer.cards)[0]
-			player_total = return_hand_total(player[0].cards)[0]
-
 			if player_total > dealer_total:
-				print("You Win!\n")
-				money += player[0].bet
-				print(f"Your Reward: ${player[0].bet}")
+				print("Result: Win\n")
+				money += bet
+				print(f"Payout: ${bet}")
 				print(f"New Balance: ${money}")
 			elif dealer_total > player_total:
-				print("Dealer Wins\n")
-				money -= player[0].bet
-				print(f"Your Loss: ${player[0].bet}")
+				print("Result: Loss\n")
+				money -= bet
+				print(f"Payout: $-{bet}")
 				print(f"New Balance: ${money}")
 			else:
 				print("Result: Push")
@@ -188,16 +252,36 @@ def play():
 	print("\nYou have no money left. You have been kicked out of the casino.")
 	money = 1000
 
+
 def play_hand(dealer, player, j):
 	global money
 
 	while True:
+		# Give extra card after a Split
+		if len(player[j].cards) == 1:
+			player[j].hit()
+			player[j].check_blackjack()
+
 		# Player Decisions
 		print("-------------------------")
 		print(f"Playing Hand {j+1} of {len(player)}")
 		print(f"Current Bet: ${player[j].bet}\n")
 		print(f"Dealer Cards: {dealer.cards[0]}, ?")
-		print(f"Player Cards: {player[j]}")
+
+		# Prints Player's Cards
+		for k in range(len(player)):
+			if j == k:
+				print(f"Player Cards: {player[k]}  <--- CURRENT HAND")
+			else:
+				if player[k].busted == True:
+					print(f"Player Cards: {player[k]} (BUS)")
+				elif player[k].surrendered == True:
+					print(f"Player Cards: {player[k]} (SUR)")
+				elif player[k].blackjack == True:
+					print(f"Player Cards: {player[k]} (BLJ)")
+				else:
+					print(f"Player Cards: {player[k]}")
+
 		print()
 		print("What would you like to do?")
 		print("-------------------------")
@@ -215,6 +299,9 @@ def play_hand(dealer, player, j):
 			# On ValueError, the input variable is instead set to an integer not corresponding to anything on the menu, which will bring you back to the initial menu
 			selection = 9
 
+		if selection == 2:
+			time.sleep(0.25)
+
 		clear_terminal()
 
 		# Runs different functions based off of what you inputted
@@ -225,16 +312,31 @@ def play_hand(dealer, player, j):
 
 				if return_hand_total(player[j].cards)[0] > 21:
 					print("-------------------------")
+					print(f"Playing Hand {j+1} of {len(player)}")
 					print(f"Current Bet: ${player[j].bet}\n")
-					print(f"Dealer Cards: {dealer[j].cards[0]}, ?")
-					print(f"Player Cards: {player[j]}")
+					print(f"Dealer Cards: {dealer.cards[0]}, ?")
+
+					# Prints Player's Cards
+					for k in range(len(player)):
+						if j == k:
+							print(f"Player Cards: {player[k]}  <--- CURRENT HAND")
+						else:
+							if player[k].busted == True:
+								print(f"Player Cards: {player[k]} (BUS)")
+							elif player[k].surrendered == True:
+								print(f"Player Cards: {player[k]} (SUR)")
+							elif player[k].blackjack == True:
+								print(f"Player Cards: {player[k]} (BLJ)")
+							else:
+								print(f"Player Cards: {player[k]}")
 
 					time.sleep(0.5)
 					player[j].bust()
-					print("\nYou have busted. The dealer wins.\n")
-					money -= player[j].bet
-					print(f"Your Loss: ${player[j].bet}")
-					print(f"New Balance: ${money}")
+					if len(player) == 1:
+						print("\nYou have busted. The dealer wins.\n")
+						money -= player[j].bet
+						print(f"Payout: $-{player[j].bet}")
+						print(f"New Balance: ${money}")
 					break
 			case 2:
 				# Stand
@@ -243,24 +345,39 @@ def play_hand(dealer, player, j):
 				# Double Down
 				if len(player[j].cards) > 2:
 					print("You can only Double Down on your first choice of the hand.")
-				elif (player[j].bet*2) > money:
+				elif player[j].bet > money:
 					print("You do not have enough money to Double Down.")
-					print(f"Current Balance (Not Including your Bet): ${money-player[j].bet}")
 				else:
 					# Gives 1 Additional Card
 					player[j].double_down()
 
+					print("-------------------------")
+					print(f"Playing Hand {j+1} of {len(player)}")
 					print(f"Current Bet: ${player[j].bet}\n")
 					print(f"Dealer Cards: {dealer.cards[0]}, ?")
-					print(f"Player Cards: {player[j]}")
+					
+					# Prints Player's Cards
+					for k in range(len(player)):
+						if j == k:
+							print(f"Player Cards: {player[k]}  <--- CURRENT HAND")
+						else:
+							if player[k].busted == True:
+								print(f"Player Cards: {player[k]} (BUS)")
+							elif player[k].surrendered == True:
+								print(f"Player Cards: {player[k]} (SUR)")
+							elif player[k].blackjack == True:
+								print(f"Player Cards: {player[k]} (BLJ)")
+							else:
+								print(f"Player Cards: {player[k]}")
 
 					if return_hand_total(player[j].cards)[0] > 21:
 						time.sleep(0.5)
 						player[j].bust()
-						print("\nYou have busted. The dealer wins.\n")
-						money -= player[j].bet
-						print(f"Your Loss: ${player[j].bet}")
-						print(f"New Balance: ${money}")
+						if len(player) == 1:
+							print("\nYou have busted. The dealer wins.\n")
+							money -= player[j].bet
+							print(f"Payout: $-{player[j].bet}")
+							print(f"New Balance: ${money}")
 						
 					# End Player's Turn
 					time.sleep(0.5)
@@ -271,10 +388,10 @@ def play_hand(dealer, player, j):
 					print("You can only Split with two cards.")
 				elif not (card_values.get(player[j].cards[0]) == card_values.get(player[j].cards[1])):
 					print("You can only Split when you have two cards of the same value.")
-				elif (player[j].bet*2) > money:
+				elif player[j].bet > money:
 					print("You do not have enough money to Split.")
 				else:
-					player[j].split()
+					player.append(player[j].split())
 			case 5:
 				print("You have surrendered your Hand.\n")
 				print(f"Your Loss: ${player[j].bet/2}")
