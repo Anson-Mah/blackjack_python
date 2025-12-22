@@ -10,8 +10,8 @@ def main():
 		print('[1]. Play Blackjack')
 		print("[2]. View Settings")
 		print("[3]. Change Settings")
-		# print('[4]. Explain Settings')
-		# print('[5]. How to Play Blackjack')
+		print('[4]. Explain Settings')
+		print('[5]. How to Play Blackjack')
 
 		# Input Correction
 		# If the user's input would break the program, it changes the input such that it will not break the program.
@@ -41,6 +41,35 @@ def main():
 				how_to_play()
 
 
+class Hand:
+	global deck
+
+	def __init__(self, cards, bet):
+		self.bet = bet
+		self.cards = cards
+		self.busted = False
+		self.surrendered = False
+
+	def bust(self):
+		self.busted = True
+
+	def surrender(self):
+		self.surrendered = True
+
+	def hit(self):
+		self.cards.append(deck.pop(0))
+
+	def double_down(self):
+		self.bet *= 2
+		self.cards.append(deck.pop(0))
+
+	def split(self):
+		pass
+
+	def __str__(self):
+		return f"{", ".join(self.cards)} ({return_hand_total(self.cards)[0]})"
+
+
 def play():
 	global deck, money, card_values, amount_of_decks, hit_on_soft17
 
@@ -54,162 +83,72 @@ def play():
 			deck = []
 			make_deck(amount_of_decks)
 
-		# Creates/Resets In-Game Variables
-		player_cards = []
-		dealer_cards = []
-		player_busted = False
-		dealer_busted = False
-		player_has_surrendered = False
+		# Resets Player and Dealer hands
+		dealer = Hand([], 0)
+		player = [Hand([], bet)]
 
 		# Deal Out Cards
 		for i in range(4):
 			if i % 2 == 0:
-				player_cards.append(deck.pop(0))
+				player[0].hit()
 			else:
-				dealer_cards.append(deck.pop(0))
+				dealer.hit()
 
 			time.sleep(0.5)
 			clear_terminal()
 
 			print("-------------------------")
-			print(f"Bet: ${bet}\n")
+			print(f"Current Bet: ${player[0].bet}\n")
 
 			match i:
 				case 0:
 					time.sleep(0.5)
-					print("Dealer Cards: ")	
-					print(f"Player Cards: {print_cards(player_cards)}")
+					print("Dealer Cards: ")
+					print(f"Player Cards: {player[0]}")
 				case 1 | 2:
-					print(f"Dealer Cards: {dealer_cards[0]}")	
-					print(f"Player Cards: {print_cards(player_cards)}")
+					print(f"Dealer Cards: {dealer.cards[0]}")
+					print(f"Player Cards: {player[0]}")
 				case 3:
-					print(f"Dealer Cards: {dealer_cards[0]}, ?")	
-					print(f"Player Cards: {print_cards(player_cards)}")
+					print(f"Dealer Cards: {dealer.cards[0]}, ?")
+					print(f"Player Cards: {player[0]}")
 					time.sleep(0.5)
 					clear_terminal()
 
 		# Player's Turn
-		while True:
-			# Player Decisions
-			print("-------------------------")
-			print(f"Bet: ${bet}\n")
-			print(f"Dealer Cards: {dealer_cards[0]}, ?")	
-			print(f"Player Cards: {print_cards(player_cards)}")
-			print()
-			print("What would you like to do?")
-			print("-------------------------")
-			print("[1]. Hit")
-			print("[2]. Stand")
-			print("[3]. Double Down")
-			print("[4]. Surrender")
-
-			# Input Correction
-			# If the user's input would break the program, it changes the input such that it will not break the program.
-			try:
-				selection = int(input("Select an Option: "))
-			except ValueError:
-				# On ValueError, the input variable is instead set to an integer not corresponding to anything on the menu, which will bring you back to the initial menu
-				selection = 9
-
-			clear_terminal()
-
-			# Runs different functions based off of what you inputted
-			match selection:
-				case 1:
-					# Hit
-					player_cards.append(deck.pop(0))
-
-					if return_hand_total(player_cards)[0] > 21:
-						print("-------------------------")
-						print(f"Bet: ${bet}\n")
-						print(f"Dealer Cards: {dealer_cards[0]}, ?")	
-						print(f"Player Cards: {print_cards(player_cards)}")
-
-						time.sleep(0.5)
-						player_busted = True
-						print("\nYou have busted. The dealer wins.\n")
-						money -= bet
-						print(f"Your Loss: ${bet}")
-						print(f"New Balance: ${money}")
-						break
-				case 2:
-					# Stand
-					break
-				case 3:
-					# Double Down
-					if len(player_cards) > 2:
-						print("You can only Double Down on your first choice of the hand.")
-					elif (bet*2) > money:
-						print("You do not have enough money to Double Down.")
-						print(f"Current Balance (Not Including your Bet): ${money-bet}")
-					else:
-						bet = bet * 2
-
-						# Gives 1 Additional Card
-						player_cards.append(deck.pop(0))
-
-						print(f"Bet: ${bet}\n")
-						print(f"Dealer Cards: {dealer_cards[0]}, ?")	
-						print(f"Player Cards: {print_cards(player_cards)}")
-
-						if return_hand_total(player_cards)[0] > 21:
-							time.sleep(0.5)
-							player_busted = True
-							print("\nYou have busted. The dealer wins.\n")
-							money -= bet
-							print(f"Your Loss: ${bet}")
-							print(f"New Balance: ${money}")
-							
-						# End Player's Turn
-						time.sleep(0.5)
-						break
-				# case 4:
-				# 	# Split
-				# 	if len(player_cards) > 2:
-				# 		print("You can only Split with two cards.")
-				# 	elif not (card_values.get(player_cards[0]) == card_values.get(player_cards[1])):
-				# 		print("You can only Split when you have two cards of the same value.")
-				# 	elif (bet*2) > money:
-				# 		print("You do not have enough money to Split.")
-				# 		print(f"Current Balance (Not Including your Bet): ${money-bet}")
-				# 	else:
-				# 		pass
-				case 4:
-					print("You have surrendered your Hand.\n")
-					print(f"Your Loss: ${bet/2}")
-					money -= (bet/2)
-					print(f"New Balance: ${money}")
-					player_has_surrendered = True
-					break
+		j = 0
+		while j < len(player):
+			play_hand(dealer, player, j)
+			j += 1
 
 		# Dealer's Turn
-		if player_has_surrendered == False and player_busted == False:
+		if player[0].surrendered == False and player[0].busted == False:
 			while True:
 				clear_terminal()
 
 				print("-------------------------")
-				print(f"Bet: ${bet}\n")
-				print(f"Dealer Cards: {print_cards(dealer_cards)}")
-				print(f"Player Cards: {print_cards(player_cards)}")
+				print(f"Bet: ${player[0].bet}\n")
+				print(f"Dealer Cards: {dealer}")
+				print(f"Player Cards: {player[0]}")
 
-				dealer_total = return_hand_total(dealer_cards)[0]
+				dealer_total = return_hand_total(dealer.cards)[0]
+				player_total = return_hand_total(player[0].cards)[0]
 
 				if dealer_total < 17:
 					# Hit if Under 17
-					dealer_cards.append(deck.pop(0))
+					dealer.hit()
 					time.sleep(0.5)
 				elif dealer_total > 21:
-					dealer_busted = True
+					dealer.busted = True
 					print("\nThe dealer has busted. You win!\n")
-					money += bet
-					print(f"Your Reward: ${bet}")
+					money += player[0].bet
+					print(f"Your Reward: ${player[0].bet}")
 					print(f"New Balance: ${money}")
 					break
 				elif dealer_total == 17:
 					# If 'Hit on Soft 17' is Enabled and the hand is a Soft 17, then Hit
-					if hit_on_soft17 == True and return_hand_total(dealer_cards) == True:
+					if hit_on_soft17 == True and return_hand_total(dealer.cards)[1] == True:
 						# Hit on Soft 17
-						dealer_cards.append(deck.pop(0))
+						dealer.hit()
 						time.sleep(0.5)
 					else:
 						# Stand on Hard 17 or if 'Hit on Soft 17' is Disabled
@@ -219,22 +158,22 @@ def play():
 					break
 
 		# Compare Hands if Nobody Busted
-		if player_has_surrendered == False and player_busted == False and dealer_busted == False:
+		if player[0].surrendered == False and player[0].busted == False and dealer.busted == False:
 			time.sleep(0.5)
 			print()
 
-			player_total = return_hand_total(player_cards)[0]
-			dealer_total = return_hand_total(dealer_cards)[0]
+			dealer_total = return_hand_total(dealer.cards)[0]
+			player_total = return_hand_total(player[0].cards)[0]
 
 			if player_total > dealer_total:
 				print("You Win!\n")
-				money += bet
-				print(f"Your Reward: ${bet}")
+				money += player[0].bet
+				print(f"Your Reward: ${player[0].bet}")
 				print(f"New Balance: ${money}")
 			elif dealer_total > player_total:
 				print("Dealer Wins\n")
-				money -= bet
-				print(f"Your Loss: ${bet}")
+				money -= player[0].bet
+				print(f"Your Loss: ${player[0].bet}")
 				print(f"New Balance: ${money}")
 			else:
 				print("Result: Push")
@@ -249,6 +188,100 @@ def play():
 	print("\nYou have no money left. You have been kicked out of the casino.")
 	money = 1000
 
+def play_hand(dealer, player, j):
+	global money
+
+	while True:
+		# Player Decisions
+		print("-------------------------")
+		print(f"Playing Hand {j+1} of {len(player)}")
+		print(f"Current Bet: ${player[j].bet}\n")
+		print(f"Dealer Cards: {dealer.cards[0]}, ?")
+		print(f"Player Cards: {player[j]}")
+		print()
+		print("What would you like to do?")
+		print("-------------------------")
+		print("[1]. Hit")
+		print("[2]. Stand")
+		print("[3]. Double Down")
+		print("[4]. Split")
+		print("[5]. Surrender")
+
+		# Input Correction
+		# If the user's input would break the program, it changes the input such that it will not break the program.
+		try:
+			selection = int(input("Select an Option: "))
+		except ValueError:
+			# On ValueError, the input variable is instead set to an integer not corresponding to anything on the menu, which will bring you back to the initial menu
+			selection = 9
+
+		clear_terminal()
+
+		# Runs different functions based off of what you inputted
+		match selection:
+			case 1:
+				# Hit
+				player[j].hit()
+
+				if return_hand_total(player[j].cards)[0] > 21:
+					print("-------------------------")
+					print(f"Current Bet: ${player[j].bet}\n")
+					print(f"Dealer Cards: {dealer[j].cards[0]}, ?")
+					print(f"Player Cards: {player[j]}")
+
+					time.sleep(0.5)
+					player[j].bust()
+					print("\nYou have busted. The dealer wins.\n")
+					money -= player[j].bet
+					print(f"Your Loss: ${player[j].bet}")
+					print(f"New Balance: ${money}")
+					break
+			case 2:
+				# Stand
+				break
+			case 3:
+				# Double Down
+				if len(player[j].cards) > 2:
+					print("You can only Double Down on your first choice of the hand.")
+				elif (player[j].bet*2) > money:
+					print("You do not have enough money to Double Down.")
+					print(f"Current Balance (Not Including your Bet): ${money-player[j].bet}")
+				else:
+					# Gives 1 Additional Card
+					player[j].double_down()
+
+					print(f"Current Bet: ${player[j].bet}\n")
+					print(f"Dealer Cards: {dealer.cards[0]}, ?")
+					print(f"Player Cards: {player[j]}")
+
+					if return_hand_total(player[j].cards)[0] > 21:
+						time.sleep(0.5)
+						player[j].bust()
+						print("\nYou have busted. The dealer wins.\n")
+						money -= player[j].bet
+						print(f"Your Loss: ${player[j].bet}")
+						print(f"New Balance: ${money}")
+						
+					# End Player's Turn
+					time.sleep(0.5)
+					break
+			case 4:
+				# Split
+				if len(player[j].cards) > 2:
+					print("You can only Split with two cards.")
+				elif not (card_values.get(player[j].cards[0]) == card_values.get(player[j].cards[1])):
+					print("You can only Split when you have two cards of the same value.")
+				elif (player[j].bet*2) > money:
+					print("You do not have enough money to Split.")
+				else:
+					player[j].split()
+			case 5:
+				print("You have surrendered your Hand.\n")
+				print(f"Your Loss: ${player[j].bet/2}")
+				money -= (player[j].bet/2)
+				print(f"New Balance: ${money}")
+				player[j].surrender()
+				break
 
 # Creates decks for the game
 def make_deck(amount_of_decks):
@@ -320,11 +353,6 @@ def return_hand_total(hand):
 					break
 
 	return total, is_soft_hand
-
-
-def print_cards(hand):
-	return f"{", ".join(hand)} ({return_hand_total(hand)[0]})"
-	# The ", ".join(cards) syntax is used to remove brackets and quotation marks when printing the list
 
 
 def view_settings():
@@ -522,4 +550,4 @@ card_values = {
 }
 
 if __name__ == "__main__":
-	main()
+	play()
