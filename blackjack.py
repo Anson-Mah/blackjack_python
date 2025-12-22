@@ -83,7 +83,8 @@ def play():
 	# deck = ['8', 'J', '8', '6', '2', 'A', '8', '8', '2', 'J', '5', 'A', '5', 'Q', '3']
 	
 	# 2. Blackjack after Splitting
-	# deck = ['A', 'J', 'A', '6', 'J', 'J', '5']
+	# deck = ['A', 'J', 'A', '5', 'J', 'J', '5']
+	# deck = ['A', 'J', 'A', '5', 'J', '9', '5']
 	
 	# 3. Initial Blackjack
 	# deck = ['10', 'Q', 'A', '2']
@@ -223,7 +224,11 @@ def play():
 					continue
 				elif player[i].surrendered == True:
 					lose_count += 1
-					payout -= (player[i].bet/2)
+					payout -= (player[i].bet / 2)
+					continue
+				elif player[i].blackjack == True:
+					win_count += 1
+					payout += (player[i].bet * 1.5)
 					continue
 
 				dealer_total = return_hand_total(dealer.cards)[0]
@@ -242,7 +247,7 @@ def play():
 			# Results
 			print(f"\nHands Won: {win_count}")
 			print(f"Hands Lost: {lose_count}")
-			print(f"Hands Pushes: {push_count}")
+			print(f"Hands Pushed: {push_count}")
 
 			# Payout
 			money += payout
@@ -284,8 +289,29 @@ def play_hand(dealer, player, j):
 			player[j].hit()
 			player[j].check_blackjack()
 			if player[j].blackjack == True:
-				print(player[j])
-				print(player[j+1])
+				# Player Decisions
+				print("-------------------------")
+				print(f"Playing Hand {j+1} of {len(player)}")
+				print(f"Total Money Bet: ${total_money_bet}")
+				print(f"Current Bet: ${player[j].bet}\n")
+				print(f"Dealer Cards: {dealer.cards[0]}, ?")
+
+				# Prints Player's Cards
+				for k in range(len(player)):
+					if j == k:
+						print(f"Player Cards: {player[k]}  <--- CURRENT HAND")
+					else:
+						if player[k].busted == True:
+							print(f"Player Cards: {player[k]} (BUS)")
+						elif player[k].surrendered == True:
+							print(f"Player Cards: {player[k]} (SUR)")
+						elif player[k].blackjack == True:
+							print(f"Player Cards: {player[k]} (BLJ)")
+						else:
+							print(f"Player Cards: {player[k]}")
+
+				time.sleep(0.5)
+				# Automatically Stand
 				break
 
 		# Player Decisions
