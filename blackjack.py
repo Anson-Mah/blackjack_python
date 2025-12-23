@@ -18,7 +18,7 @@ def main():
 		try:
 			selection = int(input("Select an Option: "))
 		except ValueError:
-				# On ValueError, the input variable is instead set to an integer not corresponding to anything on the menu, which will bring you back to the initial menu
+			# On ValueError, the input variable is instead set to an integer not corresponding to anything on the menu, which will bring you back to the initial menu
 			selection = 9
 
 		clear_terminal()
@@ -70,6 +70,7 @@ class Hand:
 	def split(self):
 		return Hand([self.cards.pop()], self.bet)
 
+	# Will print the cards in hand along with the hand's total
 	def __str__(self):
 		return f"{", ".join(self.cards)} ({return_hand_total(self.cards)[0]})"
 
@@ -92,16 +93,17 @@ def play():
 	bet = bet_money(True)
 
 	while True:
+		# Shuffles a new shoe when cards get low
 		if len(deck) < 26:
 			print("Deck getting low, shuffling a new deck.")
 			deck = []
 			make_deck(amount_of_decks)
 
-		# Resets Player and Dealer hands
+		# Reset Player and Dealer hands
 		dealer = Hand([], 0)
 		player = [Hand([], bet)]
 
-		# Resets Other Variables
+		# Reset Other Variables
 		total_money_bet = bet
 
 		# Deal Out Cards
@@ -149,8 +151,16 @@ def play():
 			play_hand(dealer, player, j)
 			j += 1
 
+		# Check to see if there's a player hand that has not lost yet
+		all_is_lost = True
+		for i in range(len(player)):
+			if player[i].busted == False and player[i].surrendered == False:
+				all_is_lost = False
+			else:
+				continue
+
 		# Dealer's Turn
-		if 1==1:
+		if all_is_lost == False:
 			while True:
 				clear_terminal()
 
@@ -173,7 +183,7 @@ def play():
 				dealer_total = return_hand_total(dealer.cards)[0]
 
 				if dealer_total < 17:
-					# Hit if Under 17
+					# Hit if under 17
 					dealer.hit()
 					time.sleep(0.5)
 				elif dealer_total > 21:
@@ -191,23 +201,14 @@ def play():
 				elif dealer_total == 17:
 					# If 'Hit on Soft 17' is Enabled and the hand is a Soft 17, then Hit
 					if hit_on_soft17 == True and return_hand_total(dealer.cards)[1] == True:
-						# Hit on Soft 17
 						dealer.hit()
 						time.sleep(0.5)
 					else:
 						# Stand on Hard 17 or if 'Hit on Soft 17' is Disabled
 						break
 				else:
-					# Stand if 17 or Over
+					# Stand if over 17
 					break
-
-		# Check to see if there's a player hand that has not lost yet
-		all_is_lost = True
-		for i in range(len(player)):
-			if player[i].busted == False and player[i].surrendered == False:
-				all_is_lost = False
-			else:
-				continue
 
 		# Compare Hands if Nobody Busted
 		if dealer.busted == False and all_is_lost == False:
@@ -423,13 +424,12 @@ def play_hand(dealer, player, j):
 								print(f"Player Cards: {player[k]}")
 
 					if return_hand_total(player[j].cards)[0] > 21:
-						time.sleep(0.5)
-						player[j].bust()
 						if len(player) == 1:
 							print("\nYou have busted. The dealer wins.\n")
 							money -= player[j].bet
 							print(f"Payout: $-{player[j].bet}")
 							print(f"New Balance: ${money}")
+						player[j].bust()
 						
 					# End Player's Turn
 					time.sleep(0.5)
@@ -600,13 +600,14 @@ def explain_settings():
 	print("HIT ON SOFT 17:")
 	print("By default, the dealer will automatically stand on all hands worth 17.")
 	print("Enabling this setting will change that behavior, making the dealer hit on a Soft 17.")
-	print("A Soft Hand is a hand that contains an 11-valued Ace. It is called a Soft hand because you cannot bust if you take another card.")
+	print("A Soft Hand is a hand that contains an 11-valued Ace. It is called a Soft hand because you cannot Bust if you take another card.")
 	print("Note that even with this setting enabled, the dealer will still stand on a Hard 17 (A hand worth 17 but does not have an 11-valued Ace.)")
 
 
 def how_to_play():
 	print("How to Play: Blackjack")
 
+	print("")
 	print("")
 
 	print("OBJECTIVE:")
@@ -624,16 +625,16 @@ def how_to_play():
 	print("")
 	
 	print("ROUND START:")
-	print("You and the dealer are initially dealt two cards each.")
-	print("The dealer passes out one card face up to you and themself. ")
-	print("Next, the dealer passes out one more card face up to you, but one card face down for their own hand. ")
+	print("The dealer begins the round by dealing two cards to you and themself.")
+	print("The dealer's cards are dealt one card face-up and another card face-down.")
+	print("Both of your cards are dealt face-up.")
 	
 	print("")
 	print("")
 	
 	print("BLACKJACK:")
 	print("If your initial two cards make a value of 21, this is called a BLACKJACK.")
-	print("If the dealer does not also have a BLACKJACK, then you immediately win an amount equal to 1.5 times your initial bet and the hand immediately ends.")
+	print("If this happens, you immediately win an amount equal to 1.5 times your initial bet and the hand immediately ends.")
 	
 	print("")
 	print("")
@@ -657,12 +658,13 @@ def how_to_play():
 	
 	print(" Double Down:")
 	print(" Double your initial bet and add exactly one more card to your hand.")
+	print(" After doubling down, you are forced to Stand immediately after.")
 	
 	print("")
 	
 	print(" Split:")
-	print(" You can decide to split your cards only if the 2 cards originally dealt to you are the same value.")
-	print(" Splitting turns the pair into two individual hands, each with their own bet equal to the player's initial bet.")
+	print(" You can decide to Split your cards only if the 2 cards dealt to you are the same value.")
+	print(" Splitting transforms the pair into two individual hands, each with their own separate bet equal to the player's initial bet.")
 	print(" The dealer then deals you two additional cards to complete each hand.")
 	
 	print("")
@@ -674,13 +676,14 @@ def how_to_play():
 	print("")
 	
 	print("DEALER'S TURN:")
-	print("Once you have finished playing your hand, the dealer's turn begins.")
-	print("The dealer begins their turn by revealing their facedown card.")
+	print("Once you have finished playing your hand(s), the dealer's turn begins.")
+	print("The dealer begins their turn by revealing their face-down card.")
 	print("Unlike the player, the dealer has specific rules regarding their play which must be followed at all times.")
-	print("If the dealer has anything under 17, then the must HIT.")
+	print("If the dealer has anything under 17, then they must HIT.")
 	print("If the dealer has 17 or over, then they must STAND.")
-	print("The dealer cannot DOUBLE DOWN nor SPLIT.")
-	print("Once the dealer finishes playing their hand, you compare your hand against the dealer's.")
+	print("The dealer cannot DOUBLE DOWN, SPLIT, nor SURRENDER.")
+	print("Once the dealer finishes playing their hand, you compare your hand(s) against the dealer's.")
+	print("If you have multiple separate hands, then each comparison is resolved individually.")
 	
 	print("")
 	
@@ -723,4 +726,4 @@ card_values = {
 }
 
 if __name__ == "__main__":
-	play()
+	main()
