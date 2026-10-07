@@ -72,7 +72,7 @@ class Hand:
 
 	# Will print the cards in hand along with the hand's total
 	def __str__(self):
-		return f"{", ".join(self.cards)} ({return_hand_total(self.cards)[0]})"
+		return f"{', '.join(self.cards)}"
 
 
 def play():
